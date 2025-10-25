@@ -45,3 +45,36 @@
         @ViewBag.Error
     </div>
 }
+
+@if (ViewBag.PowerValuesJson != null)
+{
+    <div style="margin-top:30px;">
+        <h4>Power Output Over Time</h4>
+        <canvas id="powerChart" width="800" height="300"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const powerData = @Html.Raw(ViewBag.PowerValuesJson);
+            const ctx = document.getElementById('powerChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: powerData.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Power (Watts)',
+                        data: powerData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { display: true, title: { display: true, text: 'Time (seconds)' } },
+                        y: { display: true, title: { display: true, text: 'Watts' } }
+                    }
+                }
+            });
+        </script>
+    </div>
+}
