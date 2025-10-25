@@ -18,7 +18,15 @@
 @if (powerValuesJson != null)
 {
     <p></p>
+    @if (ViewBag.FtpWindowAverage != null)
+    {
+        <p><b>Average Power (FTP 20min Window):</b> @ViewBag.FtpWindowAverage Watts</p>
+    }
     <p><b>Estimated FTP:</b> @ftp</p>
+    @if (ViewBag.AveragePower != null)
+    {
+        <p><b>Average Power (Full Ride):</b> @ViewBag.AveragePower Watts</p>
+    }
     <canvas id="powerChart" width="800" height="400"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -39,6 +47,13 @@
                 maxStart = i;
             }
         }
+        // Pass the FTP window average to the server for display
+        fetch('', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ftpWindowAverage: maxAvg.toFixed(2) })
+        });
+
         const labels = powerValues.map((_, i) => (i / 60).toFixed(1)); // minutes
 
         const normalData = powerValues.map((v, i) =>

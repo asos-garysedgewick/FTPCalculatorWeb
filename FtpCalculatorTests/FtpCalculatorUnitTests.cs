@@ -96,5 +96,26 @@ namespace FtpCalculatorTests
             Assert.IsType<string>(result);
             Assert.Contains("Not enough data", (string)result);
         }
+
+        /// <summary>
+        /// This test verifies that the FtpCalculator returns the error message
+        /// "Please select a .fit file." when no .fit file is provided (i.e., the input path is null or empty).
+        /// It calls CalculateFtpFromFitFile with a null value and asserts the correct error message is returned.
+        /// 
+        /// Test coverage:
+        /// - Class: FTPCalculatorWeb.Services.FtpCalculator
+        /// - Method: public double CalculateFtpFromFitFile(string fitFilePath)
+        /// </summary>
+
+        [Fact] //The [Fact] attribute in xUnit marks a method as a test method
+        public void Error_Returned_When_No_Fit_File_Provided()
+        {
+            // Arrange
+            var calculator = new FtpCalculator();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => calculator.CalculateFtpFromFitFile(null));
+            Assert.Contains("Please select a .fit file.", ex.Message);
+        }
     }
 }
