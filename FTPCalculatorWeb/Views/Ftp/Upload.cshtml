@@ -1,80 +1,74 @@
 @{
-    // Set the title of the page that appears in the browser tab
-    ViewData["Title"] = "Upload FIT File";
+    ViewBag.Title = "FTP Calculator";
+    var powerValuesJson = ViewBag.PowerValuesJson as string;
+    var ftp = ViewBag.Ftp;
+   
 }
-
-@* Display a heading on the page *@
 <h2>FTP Calculator</h2>
-
-@* Display instructions on the page *@
 <p>Choose your .fit file and press 'Estimate FTP'.</p>
-<p><b>Note:</b> There must be at least 1 x 20 minute effort to estimate the FTP.</p>
-
-<!-- 
-    This form allows the user to select and upload a .fit file.
-    - asp-action="Upload" tells ASP.NET to send the form data to the Upload action in FtpController.
-    - method="post" means the form will send data using HTTP POST.
-    - enctype="multipart/form-data" is required for file uploads.
--->
-<form asp-action="Upload" method="post" enctype="multipart/form-data">
-    <!-- File input for selecting a .fit file -->
+<p><b>Note: </b>There must be at least 1 x 20 minute effort to estimate the FTP.</p>
+<form asp-action="Upload" enctype="multipart/form-data" method="post">
     <input type="file" name="fitFile" accept=".fit" />
-    
-    <!-- Button to submit the form -->
     <button type="submit">Estimate FTP</button>
 </form>
-
-@* 
-    If the controller has set ViewBag.Ftp (meaning FTP was calculated), 
-    show the result to the user.
-*@
-@if (ViewBag.Ftp != null)
-{
-    <div style="margin-top:20px;">
-        <strong>Estimated FTP:</strong> @ViewBag.Ftp watts
-    </div>
-}
-
-@* 
-    If the controller has set ViewBag.Error (meaning there was a problem), 
-    show the error message in red.
-*@
 @if (ViewBag.Error != null)
 {
-    <div style="color:red; margin-top:20px;">
-        @ViewBag.Error
-    </div>
+    <div style="color:red">@ViewBag.Error</div>
 }
-
-@if (ViewBag.PowerValuesJson != null)
+@if (powerValuesJson != null)
 {
-    <div style="margin-top:30px;">
-        <h4>Power Output Over Time</h4>
-        <canvas id="powerChart" width="800" height="300"></canvas>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            const powerData = @Html.Raw(ViewBag.PowerValuesJson);
-            const ctx = document.getElementById('powerChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: powerData.map((_, i) => i + 1),
-                    datasets: [{
-                        label: 'Power (Watts)',
-                        data: powerData,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        pointRadius: 0,
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: { display: true, title: { display: true, text: 'Time (seconds)' } },
-                        y: { display: true, title: { display: true, text: 'Watts' } }
+    <p></p>
+    <p><b>Estimated FTP:</b> @ftp</p>
+    <canvas id="powerChart" width="800" height="400"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const powerValues = @Html.Raw(powerValuesJson);
+        const ftpWindow = 20 * 60; // 20 minutes in seconds
+        let maxAvg = 0, maxStart = 0;
+        // Find 20min window with highest average
+        for (let i = 0; i <= powerValues.length - ftpWindow; i++) {
+            let sum = 0;
+            for (let j = 0; j < ftpWindow; j++) sum += powerValues[i + j];
+            let avg = sum / ftpWindow;
+            if (avg > maxAvg) {
+                maxAvg = avg;
+                maxStart = i;
+            }
+        }
+        // Prepare data for Chart.js
+        const labels = powerValues.map((_, i) => (i / 60).toFixed(1)); // minutes
+        const backgroundColors = powerValues.map((_, i) =>
+            (i >= maxStart && i < maxStart + ftpWindow) ? 'rgba(255,0,0,0.5)' : 'rgba(54,162,235,0.2)'
+        );
+        const borderColors = powerValues.map((_, i) =>
+            (i >= maxStart && i < maxStart + ftpWindow) ? 'rgba(255,0,0,1)' : 'rgba(54,162,235,1)'
+        );
+        const ctx = document.getElementById('powerChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Power (Watts)',
+                    data: powerValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time (minutes)' },
+                        ticks: { maxTicksLimit: 20 }
+                    },
+                    y: {
+                        title: { display: true, text: 'Power (Watts)' }
                     }
                 }
-            });
-        </script>
-    </div>
+            }
+        });
+    </script>
 }
