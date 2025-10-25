@@ -28,7 +28,6 @@ namespace FTPCalculatorWeb.Controllers
                 return View();
             }
 
-            // Save uploaded file to a temp location
             var tempPath = Path.GetTempFileName();
             using (var stream = System.IO.File.Create(tempPath))
             {
@@ -36,16 +35,23 @@ namespace FTPCalculatorWeb.Controllers
             }
 
             double ftp;
-            List<double> powerValues = null; // Add this line to declare the variable
+            List<double> powerValues = null;
+            List<double> cadenceValues = null; // Add this line
             try
             {
                 ftp = _ftpCalculator.CalculateFtpFromFitFile(tempPath);
 
-                // Assuming FtpCalculator has a method to extract power values
                 var csvPath = Path.ChangeExtension(tempPath, ".csv");
                 _ftpCalculator.CalculateFtpFromFitFile(tempPath); // This will create the CSV file as a side effect
+
+                // Extract power values
                 powerValues = typeof(FtpCalculator)
                     .GetMethod("ParsePowerValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
+
+                // Extract cadence values (add this block)
+                cadenceValues = typeof(FtpCalculator)
+                    .GetMethod("ParseCadenceValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                     .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
             }
             catch (Exception ex)
@@ -55,7 +61,6 @@ namespace FTPCalculatorWeb.Controllers
             }
             finally
             {
-                // Clean up temp files
                 System.IO.File.Delete(tempPath);
                 var csvPath = Path.ChangeExtension(tempPath, ".csv");
                 if (System.IO.File.Exists(csvPath))
@@ -63,9 +68,8 @@ namespace FTPCalculatorWeb.Controllers
             }
 
             ViewBag.Ftp = ftp;
-
-            // After extracting powerValues (List<double>)
             ViewBag.PowerValuesJson = JsonSerializer.Serialize(powerValues);
+            ViewBag.CadenceValuesJson = JsonSerializer.Serialize(cadenceValues); // Add this line
 
             return View();
         }

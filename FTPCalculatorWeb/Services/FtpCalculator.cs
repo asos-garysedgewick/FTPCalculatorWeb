@@ -95,6 +95,32 @@ namespace FTPCalculatorWeb.Services
             return powerValues;
         }
 
+        // Reads the CSV file and extracts the cadence values from each row.
+        private List<double> ParseCadenceValuesFromCsv(string csvFilePath)
+        {
+            var cadenceValues = new List<double>();
+            using (var reader = new StreamReader(csvFilePath))
+            {
+                string headerLine = reader.ReadLine();
+                var headers = headerLine.Split(',');
+                // Use case-insensitive search for "Cadence"
+                int cadenceIndex = Array.FindIndex(headers, h => h.Trim().Equals("Cadence", StringComparison.OrdinalIgnoreCase));
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var columns = line.Split(',');
+                    if (cadenceIndex >= 0 && cadenceIndex < columns.Length)
+                    {
+                        if (double.TryParse(columns[cadenceIndex], out double cadence))
+                            cadenceValues.Add(cadence);
+                        else
+                            cadenceValues.Add(0);
+                    }
+                }
+            }
+            return cadenceValues;
+        }
+
         // Calculates the FTP value from the list of power values.
         // Uses a rolling window to find the highest average power over the specified window size.
         // FTP is estimated as 95% of the highest 20-minute average power.
