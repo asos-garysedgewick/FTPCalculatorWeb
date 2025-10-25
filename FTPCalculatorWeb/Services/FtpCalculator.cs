@@ -1,0 +1,121 @@
+using System.Globalization;
+using Dynastream.Fit;
+
+namespace FTPCalculatorWeb.Services
+{
+    // This class provides methods to calculate FTP (Functional Threshold Power) from a FIT file.
+    public class FtpCalculator
+    {
+        // Main method to calculate FTP from a FIT file.
+        // It converts the FIT file to CSV, parses power values, and calculates FTP.
+        public double CalculateFtpFromFitFile(string fitFilePath)
+        {
+            string csvFilePath = Path.ChangeExtension(fitFilePath, ".csv");
+            ConvertFitToCsv(fitFilePath, csvFilePath);
+            var powerValues = ParsePowerValuesFromCsv(csvFilePath);
+            var ftpResult = CalculateFtp(powerValues, 20 * 60);
+
+            if (ftpResult is double ftp)
+            {
+                // Round to 2 decimal places before returning
+                return Math.Round(ftp, 2);
+            }
+            else
+            {
+                throw new InvalidOperationException(ftpResult.ToString());
+            }
+        }
+
+        // Converts a FIT file to a CSV file.
+        // Extracts data from each record in the FIT file and writes it as a row in the CSV.
+        private void ConvertFitToCsv(string fitFilePath, string csvFilePath)
+        {
+            // Open the FIT file for reading.
+            using var fitStream = new FileStream(fitFilePath, FileMode.Open, FileAccess.Read);
+
+            // Create a FIT decoder and message broadcaster.
+            var decoder = new Dynastream.Fit.Decode();
+            var mesgBroadcaster = new MesgBroadcaster();
+            var records = new List<RecordMesg>();
+
+            // Subscribe to events to collect record messages.
+            decoder.MesgEvent += mesgBroadcaster.OnMesg;
+            decoder.MesgDefinitionEvent += mesgBroadcaster.OnMesgDefinition;
+
+            // When a record message is received, add it to the list.
+            mesgBroadcaster.RecordMesgEvent += (sender, e) =>
+            {
+                if (e.mesg is RecordMesg recordMesg)
+                {
+                    records.Add(recordMesg);
+                }
+            };
+
+            // Read and decode the FIT file.
+            decoder.Read(fitStream);
+
+            // Write the collected records to a CSV file.
+            using var writer = new StreamWriter(csvFilePath);
+            
+            // Write the CSV header.
+            writer.WriteLine("Timestamp,PositionLat,PositionLong,Distance,Speed,HeartRate,Cadence,Altitude,Temperature,Power");
+            foreach (var record in records)
+            {
+                // Write each record's data as a CSV row.
+                writer.WriteLine($"{record.GetTimestamp()}," +
+                    $"{record.GetPositionLat()}," +
+                    $"{record.GetPositionLong()}," +
+                    $"{record.GetDistance()}," +
+                    $"{record.GetSpeed()}," +
+                    $"{record.GetHeartRate()}," +
+                    $"{record.GetCadence()}," +
+                    $"{record.GetAltitude()}," +
+                    $"{record.GetTemperature()}," +
+                    $"{record.GetPower()}");
+            }
+        }
+
+        // Reads the CSV file and extracts the power values from each row.
+        private List<double> ParsePowerValuesFromCsv(string csvFilePath)
+        {
+            // Read all lines from the CSV file, skipping the header.
+            var lines = System.IO.File.ReadAllLines(csvFilePath).Skip(1);
+            var powerValues = new List<double>();
+            foreach (var line in lines)
+            {
+                // Split the line into columns.
+                var columns = line.Split(',');
+                
+                // If there are enough columns and the power value can be parsed, add it to the list.
+                if (columns.Length > 9 && double.TryParse(columns[9], NumberStyles.Any, CultureInfo.InvariantCulture, out double power))
+                {
+                    powerValues.Add(power);
+                }
+            }
+            return powerValues;
+        }
+
+        // Calculates the FTP value from the list of power values.
+        // Uses a rolling window to find the highest average power over the specified window size.
+        // FTP is estimated as 95% of the highest 20-minute average power.
+        private object CalculateFtp(List<double> powerValues, int totalSeconds)
+        {
+            if (powerValues == null || powerValues.Count < totalSeconds)
+            {
+                return "Not enough data, there must be at least 1 x 20 minute effort to estimate the FTP";
+            }
+
+            double maxAvgPower = 0;
+            // Use a rolling window to find the highest average over any 20-minute period
+            for (int i = 0; i <= powerValues.Count - totalSeconds; i++)
+            {
+                double windowAvg = powerValues.Skip(i).Take(totalSeconds).Average();
+                if (windowAvg > maxAvgPower)
+                {
+                    maxAvgPower = windowAvg;
+                }
+            }
+            return maxAvgPower * 0.95;
+        }
+    }
+}

@@ -1,0 +1,47 @@
+@{
+    // Set the title of the page that appears in the browser tab
+    ViewData["Title"] = "Upload FIT File";
+}
+
+@* Display a heading on the page *@
+<h2>FTP Calculator</h2>
+
+@* Display instructions on the page *@
+<p>Choose your .fit file and press 'Upload'.</p>
+<p><b>Note:</b> There must be at least 1 x 20 minute effort to estimate the FTP.</p>
+
+<!-- 
+    This form allows the user to select and upload a .fit file.
+    - asp-action="Upload" tells ASP.NET to send the form data to the Upload action in FtpController.
+    - method="post" means the form will send data using HTTP POST.
+    - enctype="multipart/form-data" is required for file uploads.
+-->
+<form asp-action="Upload" method="post" enctype="multipart/form-data">
+    <!-- File input for selecting a .fit file -->
+    <input type="file" name="fitFile" accept=".fit" />
+    
+    <!-- Button to submit the form -->
+    <button type="submit">Upload</button>
+</form>
+
+@* 
+    If the controller has set ViewBag.Ftp (meaning FTP was calculated), 
+    show the result to the user.
+*@
+@if (ViewBag.Ftp != null)
+{
+    <div style="margin-top:20px;">
+        <strong>Estimated FTP:</strong> @ViewBag.Ftp watts
+    </div>
+}
+
+@* 
+    If the controller has set ViewBag.Error (meaning there was a problem), 
+    show the error message in red.
+*@
+@if (ViewBag.Error != null)
+{
+    <div style="color:red; margin-top:20px;">
+        @ViewBag.Error
+    </div>
+}
