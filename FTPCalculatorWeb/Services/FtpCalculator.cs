@@ -143,5 +143,35 @@ namespace FTPCalculatorWeb.Services
             }
             return maxAvgPower * 0.95;
         }
+
+        // Add this method to FtpCalculator
+        public double CalculateAveragePower(List<double> powerValues)
+        {
+            if (powerValues == null || powerValues.Count == 0)
+                return 0;
+            return Math.Round(powerValues.Average(), 2);
+        }
+
+        // Update CalculateFtpFromFitFile to return both FTP and average power
+        public (double ftp, double avgPower) CalculateFtpAndAverageFromFitFile(string fitFilePath)
+        {
+            if (string.IsNullOrEmpty(fitFilePath))
+                throw new ArgumentException("Please select a .fit file.");
+
+            string csvFilePath = Path.ChangeExtension(fitFilePath, ".csv");
+            ConvertFitToCsv(fitFilePath, csvFilePath);
+            var powerValues = ParsePowerValuesFromCsv(csvFilePath);
+            var ftpResult = CalculateFtp(powerValues, 20 * 60);
+
+            if (ftpResult is double ftp)
+            {
+                double avgPower = CalculateAveragePower(powerValues);
+                return (Math.Round(ftp, 2), avgPower);
+            }
+            else
+            {
+                throw new InvalidOperationException(ftpResult.ToString());
+            }
+        }
     }
 }

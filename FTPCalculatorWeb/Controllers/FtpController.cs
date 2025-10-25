@@ -35,21 +35,21 @@ namespace FTPCalculatorWeb.Controllers
             }
 
             double ftp;
+            double avgPower;
             List<double> powerValues = null;
-            List<double> cadenceValues = null; // Add this line
+            List<double> cadenceValues = null;
             try
             {
-                ftp = _ftpCalculator.CalculateFtpFromFitFile(tempPath);
+                // Use the new method to get both FTP and average power
+                (ftp, avgPower) = _ftpCalculator.CalculateFtpAndAverageFromFitFile(tempPath);
 
                 var csvPath = Path.ChangeExtension(tempPath, ".csv");
-                _ftpCalculator.CalculateFtpFromFitFile(tempPath); // This will create the CSV file as a side effect
-
                 // Extract power values
                 powerValues = typeof(FtpCalculator)
                     .GetMethod("ParsePowerValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                     .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
 
-                // Extract cadence values (add this block)
+                // Extract cadence values
                 cadenceValues = typeof(FtpCalculator)
                     .GetMethod("ParseCadenceValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                     .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
@@ -68,8 +68,27 @@ namespace FTPCalculatorWeb.Controllers
             }
 
             ViewBag.Ftp = ftp;
+            ViewBag.AveragePower = avgPower; // Pass the full ride average power to the view
             ViewBag.PowerValuesJson = JsonSerializer.Serialize(powerValues);
-            ViewBag.CadenceValuesJson = JsonSerializer.Serialize(cadenceValues); // Add this line
+            ViewBag.CadenceValuesJson = JsonSerializer.Serialize(cadenceValues);
+
+            // After powerValues is loaded
+            int ftpWindow = 20 * 60;
+            double ftpWindowAverage = 0;
+            if (powerValues != null && powerValues.Count >= ftpWindow)
+            {
+                double maxAvg = 0;
+                for (int i = 0; i <= powerValues.Count - ftpWindow; i++)
+                {
+                    double windowAvg = powerValues.Skip(i).Take(ftpWindow).Average();
+                    if (windowAvg > maxAvg)
+                    {
+                        maxAvg = windowAvg;
+                    }
+                }
+                ftpWindowAverage = Math.Round(maxAvg, 0); // 0 decimal places
+            }
+            ViewBag.FtpWindowAverage = ftpWindowAverage;
 
             return View();
         }
