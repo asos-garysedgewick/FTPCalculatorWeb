@@ -128,7 +128,7 @@ namespace FTPCalculatorWeb.Services
         {
             if (powerValues == null || powerValues.Count < totalSeconds)
             {
-                return "Not enough data, there must be at least 1 x 20 minute effort to estimate the FTP";
+                return "Not enough data. This could be because a 1 x 20 minute effort or Power data could not be detected to estimate the FTP";
             }
 
             double maxAvgPower = 0;
