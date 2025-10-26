@@ -8,9 +8,9 @@ namespace FTPCalculatorWeb.Controllers
     {
         private readonly FtpCalculator _ftpCalculator;
 
-        public FtpController()
+        public FtpController(FtpCalculator ftpCalculator)
         {
-            _ftpCalculator = new FtpCalculator();
+            _ftpCalculator = ftpCalculator;
         }
 
         [HttpGet]
