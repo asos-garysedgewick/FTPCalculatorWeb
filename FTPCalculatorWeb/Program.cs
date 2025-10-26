@@ -1,3 +1,5 @@
+using FTPCalculatorWeb.Services;
+
 // This is the main entry point for your ASP.NET Core web application.
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // This line enables support for controllers and views (MVC pattern).
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<FtpCalculator>();
 
 // Build the web application using the settings and services defined above.
 var app = builder.Build();
