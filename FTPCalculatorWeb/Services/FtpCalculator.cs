@@ -76,7 +76,7 @@ namespace FTPCalculatorWeb.Services
         }
 
         // Reads the CSV file and extracts the power values from each row.
-        private List<double> ParsePowerValuesFromCsv(string csvFilePath)
+        internal List<double> ParsePowerValuesFromCsv(string csvFilePath)
         {
             // Read all lines from the CSV file, skipping the header.
             var lines = System.IO.File.ReadAllLines(csvFilePath).Skip(1);
@@ -96,7 +96,7 @@ namespace FTPCalculatorWeb.Services
         }
 
         // Reads the CSV file and extracts the cadence values from each row.
-        private List<double> ParseCadenceValuesFromCsv(string csvFilePath)
+        internal List<double> ParseCadenceValuesFromCsv(string csvFilePath)
         {
             var cadenceValues = new List<double>();
             using (var reader = new StreamReader(csvFilePath))
