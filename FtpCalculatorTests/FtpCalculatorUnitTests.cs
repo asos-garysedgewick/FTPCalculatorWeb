@@ -29,8 +29,7 @@ namespace FtpCalculatorTests
                 powerValues.Add(196);
 
             // Act: Use reflection to call the private CalculateFtp method
-            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var result = method.Invoke(calculator, new object[] { powerValues, totalMinutes });
+            var result = calculator.CalculateFtp(powerValues, totalMinutes);
 
             // Assert: The FTP should be 186.2 watts (95% of 196)
             Assert.IsType<double>(result);
@@ -58,9 +57,8 @@ namespace FtpCalculatorTests
             powerValues.AddRange(Enumerable.Repeat(296d, segmentMinutes));
             powerValues.AddRange(Enumerable.Repeat(50d, segmentMinutes));
 
-            // Act: Use reflection to call the private CalculateFtp method
-            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var result = method.Invoke(calculator, new object[] { powerValues, segmentMinutes });
+            // Act: Directly call the public CalculateFtp method
+            var result = calculator.CalculateFtp(powerValues, segmentMinutes);
 
             // Assert: Only the highest 20-min (281.2W) is returned for FTP
             Assert.IsType<double>(result);
@@ -89,8 +87,7 @@ namespace FtpCalculatorTests
                 powerValues.Add(196);
 
             // Act: Use reflection to call the private CalculateFtp method
-            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var result = method.Invoke(calculator, new object[] { powerValues, 20 * 60 });
+            var result = calculator.CalculateFtp(powerValues, 20 * 60);
 
             // Assert: Error returned due to insufficient data
             Assert.IsType<string>(result);
@@ -114,7 +111,7 @@ namespace FtpCalculatorTests
             var calculator = new FtpCalculator();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => calculator.CalculateFtpFromFitFile(null));
+            var ex = Assert.Throws<ArgumentException>(() => calculator.CalculateFtpFromFitFile(string.Empty));
             Assert.Contains("Please select a .fit file.", ex.Message);
         }
     }

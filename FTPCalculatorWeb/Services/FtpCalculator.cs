@@ -28,7 +28,7 @@ namespace FTPCalculatorWeb.Services
 
         // Converts a FIT file to a CSV file.
         // Extracts data from each record in the FIT file and writes it as a row in the CSV.
-        private void ConvertFitToCsv(string fitFilePath, string csvFilePath)
+        public void ConvertFitToCsv(string fitFilePath, string csvFilePath)
         {
             // Open the FIT file for reading.
             using var fitStream = new FileStream(fitFilePath, FileMode.Open, FileAccess.Read);
@@ -76,7 +76,7 @@ namespace FTPCalculatorWeb.Services
         }
 
         // Reads the CSV file and extracts the power values from each row.
-        private List<double> ParsePowerValuesFromCsv(string csvFilePath)
+        public List<double> ParsePowerValuesFromCsv(string csvFilePath)
         {
             // Read all lines from the CSV file, skipping the header.
             var lines = System.IO.File.ReadAllLines(csvFilePath).Skip(1);
@@ -96,7 +96,7 @@ namespace FTPCalculatorWeb.Services
         }
 
         // Reads the CSV file and extracts the cadence values from each row.
-        private List<double> ParseCadenceValuesFromCsv(string csvFilePath)
+        public List<double> ParseCadenceValuesFromCsv(string csvFilePath)
         {
             var cadenceValues = new List<double>();
             using (var reader = new StreamReader(csvFilePath))
@@ -124,7 +124,7 @@ namespace FTPCalculatorWeb.Services
         // Calculates the FTP value from the list of power values.
         // Uses a rolling window to find the highest average power over the specified window size.
         // FTP is estimated as 95% of the highest 20-minute average power.
-        private object CalculateFtp(List<double> powerValues, int totalSeconds)
+        public object CalculateFtp(List<double> powerValues, int totalSeconds)
         {
             if (powerValues == null || powerValues.Count < totalSeconds)
             {
