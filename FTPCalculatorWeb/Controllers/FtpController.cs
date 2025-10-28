@@ -67,7 +67,7 @@ namespace FTPCalculatorWeb.Controllers
                     System.IO.File.Delete(csvPath);
             }
 
-            ViewBag.Ftp = ftp;
+            ViewBag.Ftp = Math.Round(ftp, 0); // Show FTP as a whole number
             ViewBag.AveragePower = avgPower; // Pass the full ride average power to the view
             ViewBag.PowerValuesJson = JsonSerializer.Serialize(powerValues);
             ViewBag.CadenceValuesJson = JsonSerializer.Serialize(cadenceValues);
