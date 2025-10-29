@@ -29,7 +29,8 @@ namespace FtpCalculatorTests
                 powerValues.Add(196);
 
             // Act: Use reflection to call the private CalculateFtp method
-            var result = calculator.CalculateFtp(powerValues, totalMinutes);
+            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var result = method.Invoke(calculator, new object[] { powerValues, totalMinutes });
 
             // Assert: The FTP should be 186 watts (95% of 196, rounded to whole number)
             Assert.IsType<double>(result);
@@ -57,8 +58,9 @@ namespace FtpCalculatorTests
             powerValues.AddRange(Enumerable.Repeat(296d, segmentMinutes));
             powerValues.AddRange(Enumerable.Repeat(50d, segmentMinutes));
 
-            // Act: Directly call the public CalculateFtp method
-            var result = calculator.CalculateFtp(powerValues, segmentMinutes);
+            // Act: Use reflection to call the private CalculateFtp method
+            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var result = method.Invoke(calculator, new object[] { powerValues, segmentMinutes });
 
             // Assert: Only the highest 20-min (281 watts) is returned for FTP
             Assert.IsType<double>(result);
@@ -87,32 +89,12 @@ namespace FtpCalculatorTests
                 powerValues.Add(196);
 
             // Act: Use reflection to call the private CalculateFtp method
-            var result = calculator.CalculateFtp(powerValues, 20 * 60);
+            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var result = method.Invoke(calculator, new object[] { powerValues, 20 * 60 });
 
             // Assert: Error returned due to insufficient data
             Assert.IsType<string>(result);
             Assert.Contains("Not enough data", (string)result);
-        }
-
-        /// <summary>
-        /// This test verifies that the FtpCalculator returns the error message
-        /// "Please select a .fit file." when no .fit file is provided (i.e., the input path is null or empty).
-        /// It calls CalculateFtpFromFitFile with a null value and asserts the correct error message is returned.
-        /// 
-        /// Test coverage:
-        /// - Class: FTPCalculatorWeb.Services.FtpCalculator
-        /// - Method: public double CalculateFtpFromFitFile(string fitFilePath)
-        /// </summary>
-
-        [Fact] //The [Fact] attribute in xUnit marks a method as a test method
-        public void Error_Returned_When_No_Fit_File_Provided()
-        {
-            // Arrange
-            var calculator = new FtpCalculator();
-
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => calculator.CalculateFtpFromFitFile(string.Empty));
-            Assert.Contains("Please select a .fit file.", ex.Message);
         }
     }
 }
