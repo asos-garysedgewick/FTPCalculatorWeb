@@ -45,14 +45,10 @@ namespace FTPCalculatorWeb.Controllers
 
                 var csvPath = Path.ChangeExtension(tempPath, ".csv");
                 // Extract power values
-                powerValues = typeof(FtpCalculator)
-                    .GetMethod("ParsePowerValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
+                powerValues = _ftpCalculator.ParsePowerValuesFromCsv(csvPath);
 
                 // Extract cadence values
-                cadenceValues = typeof(FtpCalculator)
-                    .GetMethod("ParseCadenceValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
+                cadenceValues = _ftpCalculator.ParseCadenceValuesFromCsv(csvPath);
             }
             catch (Exception ex)
             {

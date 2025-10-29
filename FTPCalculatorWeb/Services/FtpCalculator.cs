@@ -124,7 +124,7 @@ namespace FTPCalculatorWeb.Services
         // Calculates the FTP value from the list of power values.
         // Uses a rolling window to find the highest average power over the specified window size.
         // FTP is estimated as 95% of the highest 20-minute average power.
-        private object CalculateFtp(List<double> powerValues, int totalSeconds)
+        internal object CalculateFtp(List<double> powerValues, int totalSeconds)
         {
             if (powerValues == null || powerValues.Count < totalSeconds)
             {
