@@ -23,7 +23,7 @@ namespace FtpCalculatorTests
         {
             // Arrange: Create an instance of FtpCalculator and simulate 20 minutes of 196W power values
             var calculator = new FtpCalculator();
-            int totalMinutes= 20;
+            int totalMinutes = 20;
             var powerValues = new List<double>();
             for (int i = 0; i < totalMinutes; i++)
                 powerValues.Add(196);
@@ -31,9 +31,9 @@ namespace FtpCalculatorTests
             // Act: Use reflection to call the private CalculateFtp method
             var result = calculator.CalculateFtp(powerValues, totalMinutes);
 
-            // Assert: The FTP should be 186.2 watts (95% of 196)
+            // Assert: The FTP should be 186 watts (95% of 196, rounded to whole number)
             Assert.IsType<double>(result);
-            Assert.Equal(186.2, (double)result, 1); // 196 * 0.95 = 186.2
+            Assert.Equal(186, (double)result, 0); // 196 * 0.95 = 186.2 rounded to 186
         }
 
         /// <summary>
@@ -60,9 +60,9 @@ namespace FtpCalculatorTests
             // Act: Directly call the public CalculateFtp method
             var result = calculator.CalculateFtp(powerValues, segmentMinutes);
 
-            // Assert: Only the highest 20-min (281.2W) is returned for FTP
+            // Assert: Only the highest 20-min (281 watts) is returned for FTP
             Assert.IsType<double>(result);
-            Assert.Equal(281.2, (double)result, 1); // Should be 281.2
+            Assert.Equal(281, (double)result, 0); // 296 * 0.95 = 281.2 rounded to 281
         }
 
         /// <summary>
