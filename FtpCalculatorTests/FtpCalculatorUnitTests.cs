@@ -28,9 +28,8 @@ namespace FtpCalculatorTests
             for (int i = 0; i < totalMinutes; i++)
                 powerValues.Add(196);
 
-            // Act: Use reflection to call the private CalculateFtp method
-            var method = typeof(FtpCalculator).GetMethod("CalculateFtp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var result = method.Invoke(calculator, new object[] { powerValues, totalMinutes });
+            // Act: Directly call the method
+            var result = calculator.CalculateFtp(powerValues, totalMinutes);
 
             // Assert: The FTP should be 186 watts (95% of 196, rounded to whole number)
             Assert.IsType<double>(result);
