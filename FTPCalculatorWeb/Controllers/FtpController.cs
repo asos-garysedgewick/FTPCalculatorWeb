@@ -36,19 +36,23 @@ namespace FTPCalculatorWeb.Controllers
 
             double ftp;
             double avgPower;
-            List<double> powerValues = new List<double>();
-            List<double> cadenceValues = new List<double>();
+            List<double> powerValues = null;
+            List<double> cadenceValues = null;
             try
             {
                 // Use the new method to get both FTP and average power
                 (ftp, avgPower) = _ftpCalculator.CalculateFtpAndAverageFromFitFile(tempPath);
 
                 var csvPath = Path.ChangeExtension(tempPath, ".csv");
-                // Extract power values directly (no reflection)
-                powerValues = _ftpCalculator.ParsePowerValuesFromCsv(csvPath);
+                // Extract power values
+                powerValues = typeof(FtpCalculator)
+                    .GetMethod("ParsePowerValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
 
-                // Extract cadence values directly (no reflection)
-                cadenceValues = _ftpCalculator.ParseCadenceValuesFromCsv(csvPath);
+                // Extract cadence values
+                cadenceValues = typeof(FtpCalculator)
+                    .GetMethod("ParseCadenceValuesFromCsv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .Invoke(_ftpCalculator, new object[] { csvPath }) as List<double>;
             }
             catch (Exception ex)
             {
