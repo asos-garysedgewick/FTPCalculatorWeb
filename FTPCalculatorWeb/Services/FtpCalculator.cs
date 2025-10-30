@@ -173,5 +173,31 @@ namespace FTPCalculatorWeb.Services
                 throw new InvalidOperationException(ftpResult.ToString());
             }
         }
+
+        // Calculates Coggan Power Zones based on the given power values and FTP.
+        // Zones are assigned as follows:
+        // Zone 1: <55%
+        // Zone 2: 55-75%
+        // Zone 3: 76-90%
+        // Zone 4: 91-105%
+        // Zone 5: 106-120%
+        // Zone 6: 121-150%
+        // Zone 7: >150%
+        public List<int> CalculateCogganPowerZones(List<double> powerValues, double ftp)
+        {
+            var zones = new List<int>();
+            foreach (var power in powerValues)
+            {
+                double percent = (ftp > 0) ? (power / ftp) * 100 : 0;
+                if (percent < 55) zones.Add(1);           // Zone 1: <55%
+                else if (percent < 76) zones.Add(2);      // Zone 2: 55-75%
+                else if (percent < 91) zones.Add(3);      // Zone 3: 76-90%
+                else if (percent < 106) zones.Add(4);     // Zone 4: 91-105%
+                else if (percent < 121) zones.Add(5);     // Zone 5: 106-120%
+                else if (percent < 151) zones.Add(6);     // Zone 6: 121-150%
+                else zones.Add(7);                        // Zone 7: >150%
+            }
+            return zones;
+        }
     }
 }

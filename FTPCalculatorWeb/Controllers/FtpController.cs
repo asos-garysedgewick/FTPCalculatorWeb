@@ -86,7 +86,33 @@ namespace FTPCalculatorWeb.Controllers
             }
             ViewBag.FtpWindowAverage = ftpWindowAverage;
 
+            var powerZones = _ftpCalculator.CalculateCogganPowerZones(powerValues, ftp);
+            ViewBag.PowerZonesJson = JsonSerializer.Serialize(powerZones);
+
+            // Calculate time spent in each zone (in minutes, assuming 1Hz sampling)
+            var timeInZones = CalculateTimeInZones(powerZones);
+            ViewBag.TimeInZones = JsonSerializer.Serialize(timeInZones);
+
             return View();
+        }
+
+        // Updated method to calculate time in zones based on zone assignments
+        private List<double> CalculateTimeInZones(List<int> powerZones)
+        {
+            double[] counts = new double[7];
+            foreach (int zone in powerZones)
+            {
+                if (zone >= 1 && zone <= 7)
+                {
+                    counts[zone - 1] += 1.0;
+                }
+            }
+            List<double> timeInZones = new List<double>();
+            for (int i = 0; i < 7; i++)
+            {
+                timeInZones.Add(Math.Round(counts[i] / 60.0));
+            }
+            return timeInZones;
         }
     }
 }
