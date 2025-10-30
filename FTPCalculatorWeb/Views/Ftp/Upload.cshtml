@@ -1,8 +1,20 @@
+@using System.Text.Json
 @{
     ViewBag.Title = "FTP Calculator";
     var powerValuesJson = ViewBag.PowerValuesJson as string;
-    var cadenceValuesJson = ViewBag.CadenceValuesJson as string; // Add this line
+    var cadenceValuesJson = ViewBag.CadenceValuesJson as string;
     var ftp = ViewBag.Ftp;
+    // Safely handle null for ViewBag.TimeInZones
+    List<double> timeInZones = new();
+    if (ViewBag.TimeInZones is string timeInZonesJson && !string.IsNullOrEmpty(timeInZonesJson))
+    {
+        timeInZones = JsonSerializer.Deserialize<List<double>>(timeInZonesJson);
+    }
+    else
+    {
+        // Fallback: 7 zeros for 7 zones
+        timeInZones = Enumerable.Repeat(0.0, 7).ToList();
+    }
 }
 <h2>FTP Calculator</h2>
 <p>Choose your .fit file and press 'Estimate FTP'.</p>
@@ -32,6 +44,18 @@
     <script>
         const powerValues = @Html.Raw(powerValuesJson);
         const cadenceValues = @Html.Raw(cadenceValuesJson ?? "[]");
+        const powerZones = @Html.Raw(ViewBag.PowerZonesJson ?? "[]");
+        const zoneColors = [
+            'rgba(200,200,200,0.5)', // Zone 1
+            'rgba(0,200,0,0.5)',     // Zone 2
+            'rgba(0,150,255,0.5)',   // Zone 3
+            'rgba(255,255,0,0.5)',   // Zone 4
+            'rgba(255,150,0,0.5)',   // Zone 5
+            'rgba(255,0,0,0.5)',     // Zone 6
+            'rgba(150,0,255,0.5)'    // Zone 7
+        ];
+        const barColors = powerZones.map(z => zoneColors[z-1]);
+
         // Pad or trim cadenceValues to match powerValues length
         while (cadenceValues.length < powerValues.length) cadenceValues.push(null);
         if (cadenceValues.length > powerValues.length) cadenceValues.length = powerValues.length;
@@ -72,7 +96,7 @@
                     {
                         label: 'Power (Watts)',
                         data: normalData,
-                        backgroundColor: 'rgba(54,162,235,0.2)',
+                        backgroundColor: barColors,
                         borderColor: 'rgba(54,162,235,1)',
                         borderWidth: 1,
                         barPercentage: 1.0,
@@ -125,3 +149,24 @@
         });
     </script>
 }
+<p></p>
+<p></p>
+<h3>Time Spent in Each Power Zone (minutes)</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Zone</th>
+            <th>Description</th>
+            <th>Time (min)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>1</td><td>Active Recovery (&lt;55% FTP)</td><td>@timeInZones[0]</td></tr>
+        <tr><td>2</td><td>Endurance (55-75% FTP)</td><td>@timeInZones[1]</td></tr>
+        <tr><td>3</td><td>Tempo (76-90% FTP)</td><td>@timeInZones[2]</td></tr>
+        <tr><td>4</td><td>Lactate Threshold (91-105% FTP)</td><td>@timeInZones[3]</td></tr>
+        <tr><td>5</td><td>VO2 Max (106-120% FTP)</td><td>@timeInZones[4]</td></tr>
+        <tr><td>6</td><td>Anaerobic Capacity (121-150% FTP)</td><td>@timeInZones[5]</td></tr>
+        <tr><td>7</td><td>Neuromuscular Power (&gt;150% FTP)</td><td>@timeInZones[6]</td></tr>
+    </tbody>
+</table>
